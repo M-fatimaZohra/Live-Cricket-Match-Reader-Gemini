@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Cricket Scores</title>
+    <style>
+        body { 
+            font-family: sans-serif;
+            margin: 20px;
+            background-color: white; /* Changed to white */
+            color: #222222; /* Contrast Black for general text */
+            line-height: 1.6;
+        }
+        h1 {
+            color: #1B4D3E; /* Primary Dark Green for main title */
+            text-align: center; /* Center the main title */
+            margin-bottom: 30px; /* Add space below title */
+        }
+        
+        .container {
+            max-width: 1200px; /* Max width for content */
+            margin: 0 auto; /* Center the container */
+            padding: 0 20px; /* Add some padding on the sides */
+        }
+
+        .filters {
+            text-align: center;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 30px; /* Space between filter groups */
+            flex-wrap: wrap; /* Allow filters to wrap on smaller screens */
+        }
+
+        .filter-group label {
+            margin-right: 10px;
+            font-weight: bold;
+            color: #1B4D3E; /* Primary Dark Green for labels */
+        }
+
+        .filter-group select {
+            padding: 8px 12px;
+            border: 1px solid #1B4D3E; /* Primary Dark Green border */
+            border-radius: 4px;
+            background-color: #1B4D3E; /* Primary Dark Green background */
+            color: #F2E8CF; /* Secondary Beige text */
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .match-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px; /* Spacing between cards */
+        }
+
+        .match {
+            border: 1px solid #1B4D3E; /* Primary Dark Green border */
+            padding: 20px; /* Slightly increased padding */
+            border-radius: 8px; /* Slightly larger radius */
+            background-color: #F2E8CF; /* Secondary Beige for card background */
+            min-height: 220px; /* Increased height of cards */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.3s ease, box-shadow 0.3s ease; /* Animation for scaling and hover */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Subtle shadow */
+        }
+        
+        .match:hover {
+            transform: scale(1.03); /* Scale up on hover */
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2); /* Enhanced shadow on hover */
+        }
+
+        .match h2 {
+            margin-top: 0;
+            font-size: 1.3em; /* Slightly larger font */
+            color: #222222; /* Contrast Black for card titles */
+            margin-bottom: 10px; /* More space below title */
+        }
+        
+        .match p {
+            margin-top: 10px; /* Add space above description */
+            margin-bottom: 15px; /* Add space below description, above button */
+            color: #222222; /* Contrast Black for card descriptions */
+            font-size: 0.95em; /* Slightly larger paragraph font */
+        }
+        
+        .match .link-button {
+            display: block; /* Changed to block to take full width available */
+            width: fit-content; /* Shrink to content */
+            padding: 10px 15px;
+            background-color: #D4AF37; /* Soft Gold Highlight for button background */
+            color: #222222; /* Contrast Black text for button */
+            border: none;
+            border-radius: 4px;
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 1em; /* Standard font size */
+            text-align: center; /* Center text inside button */
+            margin-top: auto; /* Pushes button to the bottom if content varies in height */
+        }
+        
+        .match .link-button:hover {
+            background-color: #1B4D3E; /* Primary Dark Green background on hover */
+            color: #F2E8CF; /* Secondary Beige text on hover */
+            text-decoration: none;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 992px) {
+            .match-grid { 
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .match { min-height: 200px; } /* Adjust min-height for fewer columns */
+            .filters { gap: 20px; } /* Adjust gap for filters */
+        }
+        @media (max-width: 768px) {
+            .match-grid { 
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .match { min-height: 180px; } /* Adjust min-height */
+            .filters { flex-direction: column; align-items: center; } /* Stack filters */
+        }
+        @media (max-width: 576px) {
+            .match-grid { 
+                grid-template-columns: 1fr; /* Single column on very small screens */
+            }
+            .match { min-height: 160px; } /* Adjust min-height */
+        }
+    </style>
+</head>
+<body>
+    <h1>Live Cricket Scores</h1>
+    
+    <div class="filters">
+        <div class="filter-group">
+            <label for="match-type-filter">Filter by Type:</label>
+            <select id="match-type-filter" onchange="applyFilters()">
+                {% for type in match_types %}
+                    <option value="{{ type }}" {% if type == selected_match_type %}selected{% endif %}>{{ type }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-group">
+            <label for="region-filter">Filter by Region:</label>
+            <select id="region-filter" onchange="applyFilters()">
+                {% for region in regions %}
+                    <option value="{{ region }}" {% if region == selected_region %}selected{% endif %}>{{ region }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    {% if matches %}
+        <div class="container">
+            <div class="match-grid">
+                {% for match in matches %}
+                    <div class="match">
+                        <h2>{{ match.title }}</h2>
+                        <p>{{ match.description }}</p>
+                        <a href="{{ match.link }}" target="_blank" class="link-button">View Match Details</a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% else %}
+        <p>No live scores available at the moment. Please try again later.</p>
+    {% endif %}
+
+    <script>
+        function applyFilters() {
+            var matchTypeSelect = document.getElementById('match-type-filter');
+            var regionSelect = document.getElementById('region-filter');
+
+            var selectedMatchType = matchTypeSelect.value;
+            var selectedRegion = regionSelect.value;
+
+            var url = window.location.pathname;
+            var params = [];
+
+            if (selectedMatchType !== 'All') {
+                params.push('match_type=' + encodeURIComponent(selectedMatchType));
+            }
+            if (selectedRegion !== 'All') {
+                params.push('region=' + encodeURIComponent(selectedRegion));
+            }
+
+            if (params.length > 0) {
+                url += '?' + params.join('&');
+            }
+            
+            window.location.href = url;
+        }
+    </script>
+
+</body>
+</html>
